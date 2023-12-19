@@ -379,8 +379,10 @@ impl Document {
     pub fn end_tag(&mut self, name: &str) {
         assert!(self.depth > 0);
 
-        if let Format::Pretty { indentation } = self.format {
-            assert!(self.buf.ends_with(indentation));
+        if let Format::Pretty { indentation, pad } = self.format {
+            if pad {
+                assert!(self.buf.ends_with(indentation));
+            }
             self.buf.truncate(self.buf.len() - indentation.len());
         }
         self.depth -= 1;
@@ -390,14 +392,30 @@ impl Document {
 
     #[doc(hidden)]
     pub fn text(&mut self, text: &dyn fmt::Display) {
+        if let Format::Pretty { indentation, pad } = self.format {
+            assert!(self.buf.ends_with(indentation));
+            let trunc_len = match pad {
+                true => indentation.len(),
+                false => 1 + indentation.len() * self.depth as usize,
+            };
+            self.buf.truncate(self.buf.len() - trunc_len);
+        }
         escape_into(&mut self.buf, text, false);
-        self.newline();
+        // If we are not padding our strings, then we still need to push an indentation
+        // in order to have it bitten off later.
+        if let Format::Pretty { pad, indentation } = self.format {
+            if pad {
+                self.newline();
+            } else {
+                self.buf.push_str(indentation);
+            }
+        }
     }
 
     /// Appends a newline and proper indentation according to `self.depth` to
     /// the buffer.
     fn newline(&mut self) {
-        if let Format::Pretty { indentation } = self.format {
+        if let Format::Pretty { indentation, .. } = self.format {
             self.buf.reserve(1 + indentation.len() * self.depth as usize);
             self.buf.push('\n');
             for _ in 0..self.depth {
@@ -439,6 +457,8 @@ pub enum Format {
     Pretty {
         /// String with which to indent, e.g. `"  "`.
         indentation: &'static str,
+        /// pad inner text with whitespace.
+        pad: bool,
     },
 }
 
