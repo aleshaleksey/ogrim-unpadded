@@ -1,6 +1,4 @@
-use proc_macro2::{TokenStream, Ident};
-
-
+use proc_macro2::{Ident, TokenStream};
 
 #[derive(Debug)]
 pub(crate) struct Input {
@@ -13,7 +11,7 @@ pub(crate) struct Input {
 #[derive(Debug)]
 pub(crate) struct Prolog {
     pub(crate) version: String,
-    pub(crate) standalone: Option<String>,
+    pub(crate) standalone: Option<bool>,
 }
 
 #[derive(Debug)]
@@ -34,10 +32,7 @@ pub(crate) enum Attr {
 pub(crate) enum Child {
     Text(String),
     TextExpr(TokenStream),
-    Closure {
-        arg: Ident,
-        body: TokenStream,
-    },
+    Closure { arg: Ident, body: TokenStream },
     Element(Element),
 }
 

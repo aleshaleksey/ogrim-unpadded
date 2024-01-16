@@ -94,8 +94,6 @@
 use core::fmt;
 use std::{fmt::Write, matches, unreachable};
 
-
-
 /// Builds or appends to an XML [`Document`] by writing XML in your Rust code.
 ///
 ///
@@ -272,9 +270,6 @@ use std::{fmt::Write, matches, unreachable};
 ///
 pub use ogrim_macros::xml;
 
-
-
-
 /// A document, potentially still under construction.
 ///
 /// This is basically just a `String` inside. The only way to create a value of
@@ -318,15 +313,18 @@ impl Document {
         let mut buf = String::with_capacity(64);
         wr!(buf, r#"<?xml version="{version}" encoding="UTF-8""#);
         if let Some(standalone) = standalone {
-            wr!(buf, " standalone={}", if standalone { "yes" } else { "no" });
+            wr!(buf, " standalone=\"{}\"", if standalone { "yes" } else { "no" });
         }
         wr!(buf, "?>");
 
-        let mut out = Self { buf, format, depth: 0 };
+        let mut out = Self {
+            buf,
+            format,
+            depth: 0,
+        };
         out.newline();
         out
     }
-
 
     #[doc(hidden)]
     pub fn open_tag(&mut self, name: &str) {
@@ -371,7 +369,11 @@ impl Document {
 
     #[doc(hidden)]
     pub fn close_empty_elem_tag(&mut self) {
-        self.buf.push_str(if matches!(self.format, Format::Terse) { "/>" } else { " />" });
+        self.buf.push_str(if matches!(self.format, Format::Terse) {
+            "/>"
+        } else {
+            " />"
+        });
         self.newline();
     }
 
@@ -416,7 +418,8 @@ impl Document {
     /// the buffer.
     fn newline(&mut self) {
         if let Format::Pretty { indentation, .. } = self.format {
-            self.buf.reserve(1 + indentation.len() * self.depth as usize);
+            self.buf
+                .reserve(1 + indentation.len() * self.depth as usize);
             self.buf.push('\n');
             for _ in 0..self.depth {
                 self.buf.push_str(indentation);
@@ -424,7 +427,6 @@ impl Document {
         }
     }
 }
-
 
 #[doc(hidden)]
 pub enum Version {
@@ -461,7 +463,6 @@ pub enum Format {
         pad: bool,
     },
 }
-
 
 /// Writes the escaped `v` into `buf`. We do that without temporary heap
 /// allocations via `EscapedWriter`, which is a layer between the

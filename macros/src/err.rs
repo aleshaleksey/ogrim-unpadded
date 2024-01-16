@@ -1,5 +1,4 @@
-use proc_macro2::{TokenStream, TokenTree, Span, Group, Punct, Ident, Delimiter, Spacing, Literal};
-
+use proc_macro2::{Delimiter, Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 
 #[derive(Debug)]
 pub(crate) struct Error {
@@ -19,7 +18,13 @@ impl Error {
             )),
         ];
 
-        tokens.into_iter().map(|mut t| { t.set_span(span); t }).collect()
+        tokens
+            .into_iter()
+            .map(|mut t| {
+                t.set_span(span);
+                t
+            })
+            .collect()
     }
 }
 

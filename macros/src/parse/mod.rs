@@ -1,14 +1,14 @@
-use proc_macro2::{TokenStream, TokenTree, Delimiter, Spacing};
 use litrs::StringLit;
+use proc_macro2::{Delimiter, Spacing, TokenStream, TokenTree};
 
-use crate::{ast, err::{Error, err}};
-
+use crate::{
+    ast,
+    err::{err, Error},
+};
 
 mod buf;
 
 use self::buf::ParseBuf;
-
-
 
 pub(crate) trait Parse {
     fn parse(buf: &mut ParseBuf) -> Result<Self, Error>
@@ -47,10 +47,12 @@ impl Parse for ast::Input {
                             let _ = inner.expect_punct('=')?;
                             format = Some(inner.collect_rest());
                         }
-                        other => return Err(err!(
-                            @key.span(),
-                            "unsupported global attribute '{other}'",
-                        )),
+                        other => {
+                            return Err(err!(
+                                @key.span(),
+                                "unsupported global attribute '{other}'",
+                            ))
+                        }
                     }
                 }
 
@@ -121,6 +123,12 @@ impl Parse for ast::Prolog {
         let encoding = parse_attr("encoding")?;
         let standalone = if encoding.is_some() {
             parse_attr("standalone")?
+                .map(|x| match x.to_lowercase().as_ref() {
+                    "yes" => Ok(true),
+                    "no" => Ok(false),
+                    x => Err(err!(@ident.span(), "expected 'yes' or 'no' got '{x}'.")),
+                })
+                .transpose()?
         } else {
             None
         };
@@ -133,7 +141,10 @@ impl Parse for ast::Prolog {
             return Err(err!("only encoding 'UTF-8' is allowed"));
         };
 
-        Ok(Self { version, standalone })
+        Ok(Self {
+            version,
+            standalone,
+        })
     }
 }
 
@@ -156,7 +167,7 @@ impl Parse for ast::Element {
                         attrs,
                         children: vec![],
                         empty: true,
-                    })
+                    });
                 }
                 TokenTree::Group(g) if g.delimiter() == Delimiter::Brace => {
                     let g = buf.expect_group(Delimiter::Brace)?;
@@ -198,8 +209,12 @@ impl Parse for ast::Element {
             buf.expect_punct('>')?;
         }
 
-
-        Ok(Self { name, attrs, children, empty: false })
+        Ok(Self {
+            name,
+            attrs,
+            children,
+            empty: false,
+        })
     }
 }
 
@@ -344,7 +359,12 @@ impl Parse for ast::Child {
             }
             TokenTree::Group(g) if g.delimiter() == Delimiter::Brace => {
                 let inner = g.stream();
-                if inner.clone().into_iter().next().is_some_and(|tt| is_punct(&tt, '|')) {
+                if inner
+                    .clone()
+                    .into_iter()
+                    .next()
+                    .is_some_and(|tt| is_punct(&tt, '|'))
+                {
                     let mut inner = ParseBuf::from_group(g);
                     let _ = inner.expect_punct('|')?;
                     let arg = inner.expect_ident()?;
@@ -355,9 +375,7 @@ impl Parse for ast::Child {
                     Ok(Self::TextExpr(inner))
                 }
             }
-            TokenTree::Punct(p) if p.as_char() == '<' => {
-                Ok(Self::Element(buf.parse()?))
-            }
+            TokenTree::Punct(p) if p.as_char() == '<' => Ok(Self::Element(buf.parse()?)),
             other => Err(err!(
                 @other.span(),
                 "expected element child: string literal, {{...}} or '<'",
@@ -376,9 +394,7 @@ impl Parse for ast::AttrValue {
                 let v = slit.into_value().into_owned();
                 Ok(Self::Literal(v))
             }
-            TokenTree::Group(g) if g.delimiter() == Delimiter::Brace => {
-                Ok(Self::Expr(g.stream()))
-            }
+            TokenTree::Group(g) if g.delimiter() == Delimiter::Brace => Ok(Self::Expr(g.stream())),
             other => Err(err!(
                 @other.span(),
                 "expected attribute value: string literal or {{...}}",

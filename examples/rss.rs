@@ -1,7 +1,5 @@
 use ogrim_macros::xml;
 
-
-
 fn main() {
     println!("{}", make_rss().unwrap());
 }
@@ -9,7 +7,10 @@ fn main() {
 fn make_rss() -> Result<String, ()> {
     // Make format dependent on CLI parameter.
     let format = if std::env::args().nth(1).is_some_and(|s| s == "--pretty") {
-        ogrim::Format::Pretty { indentation: "  " }
+        ogrim::Format::Pretty {
+            indentation: "  ",
+            pad: false,
+        }
     } else {
         ogrim::Format::Terse
     };

@@ -1,14 +1,12 @@
 use std::iter;
 
-use proc_macro2::{
-    token_stream::IntoIter, TokenStream, TokenTree, Span, Group, Punct, Ident, Delimiter,
-};
 use litrs::StringLit;
+use proc_macro2::{
+    token_stream::IntoIter, Delimiter, Group, Ident, Punct, Span, TokenStream, TokenTree,
+};
 
-use crate::err::{Error, err};
 use super::Parse;
-
-
+use crate::err::{err, Error};
 
 pub(crate) struct ParseBuf {
     iter: IntoIter,
@@ -29,7 +27,12 @@ impl ParseBuf {
     fn new_impl(mut iter: IntoIter, span: Option<Span>) -> Self {
         let curr = iter.next();
         let next = iter.next();
-        Self { iter, curr, next, span }
+        Self {
+            iter,
+            curr,
+            next,
+            span,
+        }
     }
 
     /// Returns a reference to the current token.
