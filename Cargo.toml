@@ -1,4 +1,4 @@
-[workspace.package]
+[package]
 name = "ogrim"
 version = "0.1.1"
 authors = ["Lukas Kalbertodt <lukas.kalbertodt@gmail.com>"]
@@ -19,10 +19,6 @@ keywords = ["xml", "builder", "macro", "rss"]
 categories = ["encoding", "template-engine", "data-structures"]
 exclude = [".github"]
 
-[workspace]
-resolver = "2"
-members = [
-    "ogrim",
-    "ogrim-shared",
-    "macros"
-]
+[dependencies]
+ogrim-macros = { version = "=0.0.3", path = "macros" }
+ogrim-shared = { path = "ogrim-shared" }
