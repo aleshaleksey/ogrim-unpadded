@@ -97,7 +97,7 @@ impl Parse for ast::Prolog {
         let _ = buf.bump(); // Eat '<'
         let _ = buf.bump(); // Eat '?'
         let ident = buf.expect_ident()?;
-        if ident.to_string() != "xml" {
+        if ident != "xml" {
             return Err(err!(@ident.span(), "expected 'xml'"));
         }
 
@@ -107,7 +107,7 @@ impl Parse for ast::Prolog {
                 return Ok(None);
             }
             let ident = buf.expect_ident()?;
-            if ident.to_string() != name {
+            if ident != name {
                 return Err(err!(
                     @ident.span(),
                     "expected '{name}' (prolog attributes have a fixed order)",
@@ -278,7 +278,7 @@ impl Parse for ast::Name {
         if let Ok(lit) = StringLit::try_from(buf.curr()?) {
             let token = buf.bump().unwrap();
             let s = lit.into_value().into_owned();
-            if !is_name(&s) {
+            if !ogrim_shared::is_name(&s) {
                 return Err(err!(@token.span(),
                     "string contains characters that are not allowed in XML names",
                 ));
@@ -314,7 +314,7 @@ impl Parse for ast::Name {
                 // Numeric literals
                 Ok(TokenTree::Literal(lit)) => {
                     let s = lit.to_string();
-                    if s.starts_with(|c: char| c.is_digit(10)) {
+                    if s.starts_with(|c: char| c.is_ascii_digit()) {
                         let _ = buf.bump();
                         out.push_str(&s);
                     } else {
@@ -402,5 +402,3 @@ impl Parse for ast::AttrValue {
         }
     }
 }
-
-include!("../shared.rs");
