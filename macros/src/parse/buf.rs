@@ -69,7 +69,7 @@ impl ParseBuf {
             TokenTree::Ident(i) => Ok(i),
             other => Err(Error {
                 span: Some(other.span()),
-                msg: format!("expected identifier"),
+                msg: "expected identifier".to_string(),
             }),
         }
     }
@@ -78,7 +78,7 @@ impl ParseBuf {
         let token = self.bump()?;
         StringLit::try_from(&token).map_err(|_| Error {
             span: Some(token.span()),
-            msg: format!("expected string literal"),
+            msg: "expected string literal".to_string(),
         })
     }
 

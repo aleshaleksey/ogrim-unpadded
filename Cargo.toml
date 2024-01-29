@@ -21,3 +21,4 @@ exclude = [".github"]
 
 [dependencies]
 ogrim-macros = { version = "=0.0.3", path = "macros" }
+ogrim-shared = { path = "ogrim-shared" }

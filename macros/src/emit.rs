@@ -57,7 +57,7 @@ fn emit_element(elem: &ast::Element) -> TokenStream {
             ast::Attr::Single(name, value) => {
                 let (span, v) = match value {
                     ast::AttrValue::Literal(s) => (Span::call_site(), quote! { #s }),
-                    ast::AttrValue::Expr(e) => (span_of_tokenstream(&e), quote! { (#e) }),
+                    ast::AttrValue::Expr(e) => (span_of_tokenstream(e), quote! { (#e) }),
                 };
                 out.extend(quote_spanned! {span=>
                     buf.attr(#name, &#v);
@@ -79,7 +79,7 @@ fn emit_element(elem: &ast::Element) -> TokenStream {
         let children = elem.children.iter().map(|child| match child {
             ast::Child::Text(s) => quote! { buf.text(&#s); },
             ast::Child::TextExpr(e) => {
-                let span = span_of_tokenstream(&e);
+                let span = span_of_tokenstream(e);
                 quote_spanned! {span=> buf.text(&#e); }
             }
             ast::Child::Closure { arg, body } => quote! {

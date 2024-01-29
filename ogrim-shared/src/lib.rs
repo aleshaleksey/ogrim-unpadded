@@ -1,10 +1,7 @@
-// This is ugly: the following code needs to be used by the macro at compile
-// time, but also by the library at run time. The "proper" way would be to add
-// yet another crate that both crates can depend on. But that's super annoying,
-// it's already bad enough that two crates are required for all of this. So
-// screw it, I just `include!` this code in both code bases.
+/// This is a set of shared functions that is used by all crates.
 
-fn is_name(s: &str) -> bool {
+/// Is this a valid name,
+pub fn is_name(s: &str) -> bool {
     let mut chars = s.chars();
     let Some(first) = chars.next() else {
         return false;
@@ -12,7 +9,8 @@ fn is_name(s: &str) -> bool {
     is_name_start_char(first) && chars.all(is_name_char)
 }
 
-fn is_name_start_char(c: char) -> bool {
+/// Is this a valid character for the first character of a name.
+pub fn is_name_start_char(c: char) -> bool {
     matches!(c,
         ':'
         | 'A'..='Z'
@@ -33,7 +31,8 @@ fn is_name_start_char(c: char) -> bool {
     )
 }
 
-fn is_name_char(c: char) -> bool {
+/// Is this a valid character for other parts of a name.
+pub fn is_name_char(c: char) -> bool {
     is_name_start_char(c) || matches!(c,
         '-'
         | '.'

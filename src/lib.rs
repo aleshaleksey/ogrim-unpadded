@@ -192,7 +192,7 @@ use std::{fmt::Write, matches, unreachable};
 ///
 /// let doc = xml!(
 ///     // Optional: specify meta/formatting attributes
-///     #[format = Format::Pretty { indentation: "  " }]
+///     #[format = Format::Pretty { indentation: "  ", pad: false }]
 ///     <?xml version="1.0" encoding="UTF-8" ?>   // XML prolog
 ///     <foo bar="baz">    // root element
 ///         // ...
@@ -351,7 +351,7 @@ impl Document {
             let len_before = self.buf.len();
             wr!(self.buf, r#" {name}=""#);
             let written_name = &self.buf[len_before + 1..self.buf.len() - 2];
-            if !is_name(written_name) {
+            if !ogrim_shared::is_name(written_name) {
                 panic!("attribute name '{written_name}' is not a valid XML name");
             }
 
@@ -442,7 +442,7 @@ pub enum Version {
 /// use ogrim::{xml, Format};
 ///
 /// let doc = xml!(
-///     #[format = Format::Pretty { indentation: "  " }]
+///     #[format = Format::Pretty { indentation: "  ", pad: false }]
 ///     <?xml version="1.0" ?>
 ///     <foo></>
 /// );
@@ -500,5 +500,3 @@ impl fmt::Write for EscapedWriter<'_> {
         Ok(())
     }
 }
-
-include!("shared.rs");
